@@ -291,10 +291,15 @@
       letter-spacing: 0.04em;
     }
 
-    .menu-item__names .zh:only-child {
-      color: #0f172a;
+    .menu-item__names.single-lang .en {
+      color: var(--text);
+    }
+
+    .menu-item__names.single-lang .zh {
+      color: var(--text);
       font-weight: 700;
       font-size: 1.05rem;
+      letter-spacing: 0.04em;
     }
 
     .menu-item__price {
@@ -778,6 +783,11 @@
         renderLangText(item.nameZh, 'zh', 'span', 'zh')
       ].filter(Boolean);
 
+      const nameWrapperClass = ['menu-item__names'];
+      if (nameLines.length === 1) {
+        nameWrapperClass.push('single-lang');
+      }
+
       const descriptionLines = [
         renderLangText(item.descriptionEn, 'en', 'p', 'en'),
         renderLangText(item.descriptionZh, 'zh', 'p', 'zh')
@@ -801,7 +811,7 @@
 
       card.innerHTML = `
         <div class="menu-item__header">
-          <div class="menu-item__names">
+          <div class="${nameWrapperClass.join(' ')}">
             ${nameLines.join('')}
           </div>
           ${price ? `<strong class="menu-item__price">${price}</strong>` : ''}
