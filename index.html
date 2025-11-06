@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sushi Mura Menu</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7fb;
+      --card-bg: #ffffff;
+      --accent: #ef4444;
+      --accent-soft: rgba(239, 68, 68, 0.18);
+      --accent-dark: #b91c1c;
+      --text: #1f2937;
+      --text-muted: #4b5563;
+      --border: #e5e7eb;
+      --radius: 16px;
+      --shadow: 0 18px 35px -25px rgba(15, 23, 42, 0.45);
+      font-family: "Inter", "Noto Sans SC", "PingFang SC", system-ui, -apple-system, Segoe UI, sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+      font-size: 16px;
+    }
+
+    header {
+      background: #111827;
+      color: #f9fafb;
+      padding: 1.5rem 0;
+      box-shadow: 0 14px 40px -30px rgba(0, 0, 0, 0.8);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .container {
+      width: min(960px, 100% - 2.5rem);
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.6rem, 2.5vw, 2.05rem);
+      letter-spacing: 0.02em;
+    }
+
+    header p {
+      margin: 0.35rem 0 0;
+      color: #d1d5db;
+      font-size: 0.95rem;
+    }
+
+    main {
+      padding: 1.75rem 0 3.5rem;
+    }
+
+    .controls {
+      background: var(--card-bg);
+      padding: 1.2rem clamp(1.1rem, 2vw, 1.5rem);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+
+    .field label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.45rem;
+      color: var(--text-muted);
+    }
+
+    .field input {
+      width: 100%;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 0.75rem 1.15rem;
+      font-size: 1rem;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+      background: rgba(249, 250, 251, 0.9);
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: #fff;
+    }
+
+    .toggles, .controls__buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      align-items: center;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(17, 24, 39, 0.03);
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 140ms ease;
+    }
+
+    .toggle input {
+      pointer-events: none;
+      transform: scale(1.1);
+      accent-color: var(--accent);
+    }
+
+    .controls__buttons button {
+      border: none;
+      border-radius: 10px;
+      padding: 0.55rem 1.1rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: rgba(17, 24, 39, 0.06);
+      color: var(--text);
+      transition: transform 120ms ease, box-shadow 160ms ease, background 180ms ease;
+    }
+
+    .controls__buttons button:hover {
+      background: rgba(17, 24, 39, 0.12);
+      box-shadow: 0 10px 25px -18px rgba(15, 23, 42, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .controls__buttons button:active {
+      transform: translateY(1px);
+    }
+
+    #reset-filters {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    #reset-filters:hover {
+      background: var(--accent-dark);
+      box-shadow: 0 12px 25px -20px rgba(185, 28, 28, 0.8);
+    }
+
+    .results {
+      margin: 0.2rem 0 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .menu {
+      display: grid;
+      gap: 1.35rem;
+    }
+
+    .menu-section details {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 0 1.2rem 1.2rem;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      overflow: hidden;
+    }
+
+    .menu-section summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      padding: 1.15rem 0;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #0f172a;
+    }
+
+    .menu-section summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .section-heading {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .section-heading span:last-child {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+    }
+
+    .section-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.8rem;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.85rem;
+      border-radius: 999px;
+      background: rgba(14, 116, 144, 0.14);
+      color: #0f172a;
+    }
+
+    .menu-items {
+      display: grid;
+      gap: 0.9rem;
+      padding-bottom: 0.3rem;
+    }
+
+    @media (min-width: 680px) {
+      .menu-items {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      }
+    }
+
+    .menu-item {
+      position: relative;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      background: rgba(248, 250, 252, 0.92);
+      padding: 0.95rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      transition: transform 120ms ease, box-shadow 160ms ease;
+    }
+
+    .menu-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 24px 40px -25px rgba(15, 23, 42, 0.35);
+    }
+
+    .menu-item__header {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .menu-item__names {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .menu-item__names .en {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #0f172a;
+    }
+
+    .menu-item__names .zh {
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    .menu-item__price {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--accent-dark);
+      white-space: nowrap;
+    }
+
+    .menu-item__descriptions p {
+      margin: 0;
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    .menu-item__note {
+      margin: 0;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #be123c;
+    }
+
+    .badge {
+      align-self: flex-start;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .badge--soldout {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--accent-dark);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .menu-item--sold-out .menu-item__names,
+    .menu-item--sold-out .menu-item__price {
+      opacity: 0.5;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px dashed rgba(148, 163, 184, 0.45);
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    footer {
+      padding: 1.5rem 0 2.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --card-bg: rgba(15, 23, 42, 0.86);
+        --text: #f8fafc;
+        --text-muted: #cbd5f5;
+        --border: rgba(148, 163, 184, 0.4);
+        --shadow: 0 20px 40px -30px rgba(15, 23, 42, 0.8);
+      }
+
+      header {
+        background: rgba(15, 23, 42, 0.92);
+        box-shadow: 0 25px 50px -35px rgba(15, 23, 42, 0.95);
+      }
+
+      .controls,
+      .menu-section details,
+      .menu-item,
+      .empty-state {
+        background: rgba(15, 23, 42, 0.8);
+        border-color: rgba(148, 163, 184, 0.35);
+      }
+
+      .controls__buttons button {
+        background: rgba(148, 163, 184, 0.12);
+        color: var(--text);
+      }
+
+      .controls__buttons button:hover {
+        background: rgba(148, 163, 184, 0.2);
+        box-shadow: 0 10px 30px -20px rgba(15, 23, 42, 0.85);
+      }
+
+      .toggle {
+        background: rgba(148, 163, 184, 0.08);
+        border-color: rgba(148, 163, 184, 0.35);
+        color: var(--text);
+      }
+
+      .field input {
+        background: rgba(15, 23, 42, 0.75);
+        color: var(--text);
+      }
+
+      .field input::placeholder {
+        color: rgba(226, 232, 240, 0.55);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Sushi Mura 菜单</h1>
+      <p>Tap to expand sections, search ingredients, or show only one language.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="controls" aria-label="Menu controls">
+      <div class="field">
+        <label for="search">Search / 搜索</label>
+        <input id="search" type="search" placeholder="e.g. tuna, 三文鱼, tempura…" inputmode="search" />
+      </div>
+
+      <div class="toggles" role="group" aria-label="Language visibility">
+        <label class="toggle" for="toggle-english">
+          <input id="toggle-english" type="checkbox" checked />
+          English
+        </label>
+        <label class="toggle" for="toggle-chinese">
+          <input id="toggle-chinese" type="checkbox" checked />
+          中文
+        </label>
+      </div>
+
+      <div class="controls__buttons" role="group" aria-label="Layout actions">
+        <button id="expand-all" type="button">Expand all</button>
+        <button id="collapse-all" type="button">Collapse all</button>
+        <button id="reset-filters" type="button">Reset filters</button>
+      </div>
+
+      <p class="results" id="results-count"></p>
+    </section>
+
+    <div class="menu" id="menu" aria-live="polite"></div>
+  </main>
+
+  <footer class="container">
+    <p>Prices shown in CAD. Availability and pricing may change; please confirm with staff for the latest updates.</p>
+  </footer>
+
+  <script>
+    const menuData = [
+      {
+        id: 'appetizers',
+        titleEn: 'Appetizer',
+        titleZh: '前菜',
+        items: [
+          { nameEn: 'Miso Soup', nameZh: '味噌汤', descriptionEn: 'Fish-broth based miso soup.', descriptionZh: '味噌汤，鱼汤底。', price: 2.75 },
+          { nameEn: 'Green Salad', nameZh: '绿色沙拉', descriptionEn: 'Mixed greens with house dressing.', descriptionZh: '绿色沙拉，配招牌酱汁。', price: 8.75 },
+          { nameEn: 'Horusamae Salad', nameZh: '和风沙拉', descriptionEn: 'Japanese-style salad with house dressing and bean-thread noodles.', descriptionZh: '日式沙拉，配招牌酱汁与粉丝。', price: 10.25 },
+          { nameEn: 'Seafood Salad', nameZh: '海鲜沙拉', descriptionEn: 'Assorted sashimi slices with bean-thread noodles, house dressing, and wasabi mayo.', descriptionZh: '综合生鱼片、粉丝、招牌酱与芥末蛋黄酱。', price: 15.5 },
+          { nameEn: 'Wakame', nameZh: '海藻沙拉', descriptionEn: 'Seasoned wakame seaweed salad.', descriptionZh: '调味海藻沙拉。', price: 6.5 },
+          { nameEn: 'Vegetable Sunomono', nameZh: '蔬菜凉拌粉丝', descriptionEn: 'Bean-thread noodles with pickled vegetables.', descriptionZh: '粉丝配蔬菜凉拌。', price: 5.95 },
+          { nameEn: 'Ebi Sunomono', nameZh: '虾凉拌粉丝', descriptionEn: 'Cooked shrimp and vegetables with bean-thread noodles.', descriptionZh: '熟虾与蔬菜搭配粉丝。', price: 6.75 },
+          { nameEn: 'Tako Sunomono', nameZh: '章鱼凉拌粉丝', descriptionEn: 'Octopus and vegetables with bean-thread noodles.', descriptionZh: '章鱼与蔬菜搭配粉丝。', price: 6.75 },
+          { nameEn: 'Seafood Sunomono', nameZh: '海鲜凉拌粉丝', descriptionEn: 'Assorted sashimi slices with bean-thread noodles.', descriptionZh: '综合生鱼片搭配粉丝。', price: 7.0 },
+          { nameEn: 'Gomae', nameZh: '芝麻菠菜', descriptionEn: 'Spinach with peanut sesame sauce. Contains nuts.', descriptionZh: '菠菜配花生芝麻酱（含坚果）。', price: 7.0 },
+          { nameEn: 'Tuna Gomae', nameZh: '金枪鱼芝麻菠菜', descriptionEn: 'Tuna (4 pcs) with spinach and peanut sesame sauce. Contains nuts.', descriptionZh: '金枪鱼片（4片）配菠菜与花生芝麻酱（含坚果）。', price: 9.75 },
+          { nameEn: 'Edamame', nameZh: '毛豆', descriptionEn: 'Salt-boiled soybeans in the pod.', descriptionZh: '盐水煮毛豆。', price: 7.5 },
+          { nameEn: 'Gyoza', nameZh: '煎饺', descriptionEn: 'Pan-fried pork dumplings (6 pcs).', descriptionZh: '猪肉煎饺（6粒）。', price: 9.0 },
+          { nameEn: 'Ebi Gyoza', nameZh: '虾煎饺', descriptionEn: 'Shrimp and pork dumplings (5 pcs).', descriptionZh: '虾肉与猪肉煎饺（5粒）。', price: 11.0 },
+          { nameEn: 'Agedashi Tofu', nameZh: '炸豆腐', descriptionEn: 'Deep-fried tofu (cornstarch batter) topped with bonito flakes.', descriptionZh: '炸豆腐（含玉米淀粉）配柴鱼片。', price: 8.75 },
+          { nameEn: 'Spicy Agedashi Tofu', nameZh: '辣味炸豆腐', descriptionEn: 'Spicy deep-fried tofu (cornstarch batter) topped with bonito flakes.', descriptionZh: '辣味炸豆腐（含玉米淀粉）配柴鱼片。', price: 9.25 },
+          { nameEn: 'Ika Karaage', nameZh: '炸鱿鱼', descriptionEn: 'Deep-fried squid rings.', descriptionZh: '炸花枝圈。', price: 13.75 },
+          { nameEn: 'Chicken Karaage', nameZh: '炸鸡翅', descriptionEn: 'Deep-fried chicken wings (contains cornstarch).', descriptionZh: '炸鸡翅（含玉米淀粉）。', price: 11.75 },
+          { nameEn: 'Tako Yaki', nameZh: '章鱼烧', descriptionEn: 'Fried octopus balls (6 pcs).', descriptionZh: '炸章鱼球（6粒）。', price: 8.95 },
+          { nameEn: 'Tako Wasabi', nameZh: '芥末章鱼', descriptionEn: 'Octopus marinated with wasabi.', descriptionZh: '章鱼配芥末。', price: 8.5 },
+          { nameEn: 'Okonomi Yaki (Half)', nameZh: '日式煎饼（半份）', descriptionEn: 'Half portion seafood and vegetable pancake (octopus, shrimp).', descriptionZh: '半份章鱼与虾海鲜蔬菜煎饼。', price: 12.75 },
+          { nameEn: 'Okonomi Yaki (Full)', nameZh: '日式煎饼（全份）', descriptionEn: 'Full portion seafood and vegetable pancake (octopus, shrimp).', descriptionZh: '全份章鱼与虾海鲜蔬菜煎饼。', price: 18.75 },
+          { nameEn: 'Potato Croquette', nameZh: '土豆可乐饼', descriptionEn: 'Deep-fried mashed potato and vegetables.', descriptionZh: '炸土豆与蔬菜可乐饼。', price: 9.25 },
+          { nameEn: 'Salmon Gama', nameZh: '烤三文鱼下巴', descriptionEn: 'Grilled salmon collar with salt, pepper, lemon, and parsley.', descriptionZh: '盐烤三文鱼下巴，配胡椒、柠檬与香芹。', price: 14.5, notes: 'Please allow about 20 minutes for grilling.' },
+          { nameEn: 'BBQ Hamachi Gama', nameZh: '烤鰤鱼下巴', descriptionEn: 'Grilled yellowtail collar with salt, pepper, lemon, and parsley.', descriptionZh: '盐烤鰤鱼（黄尾鱼）下巴，配胡椒、柠檬与香芹。', price: 17.5, notes: 'Please allow about 20 minutes for grilling.' },
+          { nameEn: 'Soft Shell Crab', nameZh: '炸软壳蟹', descriptionEn: 'Deep-fried soft shell crab.', descriptionZh: '炸软壳蟹。', price: 18.75 },
+          { nameEn: 'Deep Fried Oyster', nameZh: '炸牡蛎', descriptionEn: 'Deep-fried oysters. Contains dairy.', descriptionZh: '炸牡蛎（含乳制品）。', price: 14.0 },
+          { nameEn: 'Tuna Bite', nameZh: '炸金枪鱼块', descriptionEn: 'Deep-fried tuna bites with sweet chili sauce.', descriptionZh: '炸金枪鱼配甜辣酱。', price: 16.75 },
+          { nameEn: 'Rice', nameZh: '白饭', descriptionEn: 'Steamed rice.', descriptionZh: '白米饭。', price: 3.0 },
+          { nameEn: 'Sushi Rice', nameZh: '寿司饭', descriptionEn: 'Seasoned sushi rice.', descriptionZh: '调味寿司饭。', price: 3.5 }
+        ]
+      },
+      {
+        id: 'tempura',
+        titleEn: 'Tempura',
+        titleZh: '天妇罗',
+        items: [
+          { nameEn: 'Appetizer Tempura', nameZh: '前菜天妇罗', descriptionEn: '1 prawn, 1 zucchini, 1 sweet potato, 1 carrot.', descriptionZh: '1只虾、1片西葫芦、1片红薯、1片胡萝卜。', price: 10.25 },
+          { nameEn: 'Vegetable Tempura', nameZh: '蔬菜天妇罗', descriptionEn: '2 carrot, 2 zucchini, 3 sweet potato pieces.', descriptionZh: '2片胡萝卜、2片西葫芦、3片红薯。', price: 15.25 },
+          { nameEn: 'Sweet Potato Tempura', nameZh: '红薯天妇罗', descriptionEn: '6 pieces sweet potato tempura.', descriptionZh: '6片红薯天妇罗。', price: 15.5 },
+          { nameEn: 'Assorted Tempura', nameZh: '综合天妇罗', descriptionEn: '2 prawns, 2 zucchini, 2 sweet potato, 2 carrot.', descriptionZh: '2只虾、2片西葫芦、2片红薯、2片胡萝卜。', price: 16.75 },
+          { nameEn: 'Prawn & Sweet Potato Tempura', nameZh: '虾与红薯天妇罗', descriptionEn: '4 sweet potato pieces and 4 prawns.', descriptionZh: '4片红薯配4只炸虾。', price: 16.75 },
+          { nameEn: 'Prawn Tempura', nameZh: '虾天妇罗', descriptionEn: '6 pieces prawn tempura.', descriptionZh: '6只炸虾。', price: 16.75 }
+        ]
+      },
+      {
+        id: 'sashimi',
+        titleEn: 'Sashimi',
+        titleZh: '生鱼片',
+        items: [
+          { nameEn: 'Tuna Sashimi (Half)', nameZh: '金枪鱼生鱼片（半份）', descriptionEn: '5 pcs fresh sliced tuna.', descriptionZh: '5片新鲜金枪鱼。', price: 13.95 },
+          { nameEn: 'Tuna Sashimi (Full)', nameZh: '金枪鱼生鱼片（全份）', descriptionEn: '9 pcs fresh sliced tuna.', descriptionZh: '9片新鲜金枪鱼。', price: 22.95 },
+          { nameEn: 'Salmon Sashimi (Half)', nameZh: '三文鱼生鱼片（半份）', descriptionEn: '5 pcs fresh sliced salmon.', descriptionZh: '5片新鲜三文鱼。', price: 13.95 },
+          { nameEn: 'Salmon Sashimi (Full)', nameZh: '三文鱼生鱼片（全份）', descriptionEn: '9 pcs fresh sliced salmon.', descriptionZh: '9片新鲜三文鱼。', price: 22.95 },
+          { nameEn: 'Wild Salmon Sashimi (Half)', nameZh: '野生三文鱼生鱼片（半份）', descriptionEn: '4 pcs fresh wild salmon.', descriptionZh: '4片新鲜野生三文鱼。', price: 17.75 },
+          { nameEn: 'Wild Salmon Sashimi (Full)', nameZh: '野生三文鱼生鱼片（全份）', descriptionEn: '8 pcs fresh wild salmon.', descriptionZh: '8片新鲜野生三文鱼。', price: 29.0 },
+          { nameEn: 'Tuna & Salmon Sashimi', nameZh: '金枪鱼与三文鱼生鱼片', descriptionEn: '9 pcs mix of fresh tuna and salmon.', descriptionZh: '9片金枪鱼与三文鱼综合。', price: 22.95 },
+          { nameEn: 'Tuna Tataki (6 pcs)', nameZh: '炙烧金枪鱼生鱼片（6片）', descriptionEn: '6 pcs seared tuna slices with special sauce.', descriptionZh: '6片炙烧金枪鱼片，配特制酱汁。', price: 22.5 },
+          { nameEn: 'Spicy Tuna Sashimi (Half)', nameZh: '辣味金枪鱼生鱼片（半份）', descriptionEn: 'Fresh tuna with house spicy sauce.', descriptionZh: '新鲜金枪鱼配辣酱。', price: 15.95 },
+          { nameEn: 'Spicy Tuna Sashimi (Full)', nameZh: '辣味金枪鱼生鱼片（全份）', descriptionEn: 'Fresh tuna with house spicy sauce.', descriptionZh: '新鲜金枪鱼配辣酱。', price: 26.95 },
+          { nameEn: 'Spicy Salmon Sashimi (Half)', nameZh: '辣味三文鱼生鱼片（半份）', descriptionEn: 'Fresh salmon with house spicy sauce.', descriptionZh: '新鲜三文鱼配辣酱。', price: 15.95 },
+          { nameEn: 'Spicy Salmon Sashimi (Full)', nameZh: '辣味三文鱼生鱼片（全份）', descriptionEn: 'Fresh salmon with house spicy sauce.', descriptionZh: '新鲜三文鱼配辣酱。', price: 26.95 },
+          { nameEn: 'Spicy Wild Salmon Sashimi (Half)', nameZh: '辣味野生三文鱼生鱼片（半份）', descriptionEn: 'Fresh wild salmon with house spicy sauce.', descriptionZh: '新鲜野生三文鱼配辣酱。', price: 19.75 },
+          { nameEn: 'Spicy Wild Salmon Sashimi (Full)', nameZh: '辣味野生三文鱼生鱼片（全份）', descriptionEn: 'Fresh wild salmon with house spicy sauce.', descriptionZh: '新鲜野生三文鱼配辣酱。', price: 32.25 },
+          { nameEn: 'Hokkigai Sashimi', nameZh: '北极贝生鱼片', descriptionEn: '10 pcs fresh hokkigai.', descriptionZh: '10片新鲜北极贝。', price: 20.75 },
+          { nameEn: 'Toro Sashimi', nameZh: '金枪鱼腹生鱼片', descriptionEn: '7 pcs fresh toro (fatty tuna belly).', descriptionZh: '7片新鲜金枪鱼腹肉。', price: 28.0 },
+          { nameEn: 'Tako Sashimi', nameZh: '章鱼生鱼片', descriptionEn: '8 pcs fresh octopus.', descriptionZh: '8片新鲜章鱼。', price: 28.0 },
+          { nameEn: 'Amaebi Sashimi', nameZh: '甜虾生鱼片', descriptionEn: '7 pcs fresh sweet shrimp.', descriptionZh: '7只新鲜甜虾。', price: 32.25 },
+          { nameEn: 'Hamachi Sashimi', nameZh: '鰤鱼生鱼片', descriptionEn: '8 pcs fresh hamachi (yellowtail).', descriptionZh: '8片新鲜鰤鱼（黄尾鱼）。', price: 33.5 },
+          { nameEn: 'Uni Sashimi', nameZh: '海胆生鱼片', descriptionEn: '8 pcs fresh sea urchin. Currently sold out.', descriptionZh: '8片新鲜海胆，目前售罄。', price: null, status: 'sold-out', notes: 'Check back for availability.' },
+          { nameEn: 'Assorted Sashimi', nameZh: '综合生鱼片', descriptionEn: 'Daily assorted sashimi (18 pcs): salmon, tuna, hokkigai, seared tuna, snapper, wild salmon.', descriptionZh: '每日新鲜综合生鱼片18片：三文鱼、金枪鱼、北极贝、炙烧金枪鱼、鲷鱼、野生三文鱼。', price: 40.5 },
+          { nameEn: 'Deluxe Assorted Sashimi', nameZh: '豪华综合生鱼片', descriptionEn: 'Daily deluxe sashimi (26 pcs): salmon, tuna, hokkigai, seared tuna, snapper, wild salmon, hamachi, octopus, sweet shrimp.', descriptionZh: '每日豪华综合生鱼片26片：三文鱼、金枪鱼、北极贝、炙烧金枪鱼、鲷鱼、野生三文鱼、鰤鱼、章鱼、甜虾。', price: 55.0 }
+        ]
+      },
+      {
+        id: 'nigiri',
+        titleEn: 'Nigiri Sushi',
+        titleZh: '握寿司',
+        items: [
+          { nameEn: 'Tamago Nigiri', nameZh: '玉子握寿司', descriptionEn: '1 pc sweet egg omelette.', descriptionZh: '1个甜味玉子。', price: 2.5 },
+          { nameEn: 'Inari Nigiri', nameZh: '豆皮握寿司', descriptionEn: '1 pc inari tofu skin.', descriptionZh: '1个豆皮握寿司。', price: 2.5 },
+          { nameEn: 'Hokkigai Nigiri', nameZh: '北极贝握寿司', descriptionEn: '1 pc hokkigai.', descriptionZh: '1个北极贝握寿司。', price: 2.5 },
+          { nameEn: 'Tai Nigiri', nameZh: '鲷鱼握寿司', descriptionEn: '1 pc snapper.', descriptionZh: '1个鲷鱼握寿司。', price: 2.5 },
+          { nameEn: 'Tuna Nigiri', nameZh: '金枪鱼握寿司', descriptionEn: '1 pc tuna.', descriptionZh: '1个金枪鱼握寿司。', price: 2.75 },
+          { nameEn: 'Salmon Nigiri', nameZh: '三文鱼握寿司', descriptionEn: '1 pc salmon.', descriptionZh: '1个三文鱼握寿司。', price: 2.75 },
+          { nameEn: 'Ebi Nigiri', nameZh: '虾握寿司', descriptionEn: '1 pc cooked shrimp.', descriptionZh: '1个熟虾握寿司。', price: 3.0 },
+          { nameEn: 'Saba Nigiri', nameZh: '青花鱼握寿司', descriptionEn: '1 pc mackerel.', descriptionZh: '1个鲭鱼握寿司。', price: 2.75 },
+          { nameEn: 'Chopped Scallop Nigiri', nameZh: '碎扇贝握寿司', descriptionEn: '1 pc chopped scallop with mayo.', descriptionZh: '1个碎扇贝握寿司。', price: 3.5 },
+          { nameEn: 'Ika Nigiri', nameZh: '鱿鱼握寿司', descriptionEn: '1 pc squid.', descriptionZh: '1个鱿鱼握寿司。', price: 3.5 },
+          { nameEn: 'Masago Nigiri', nameZh: '毛鳞鱼籽握寿司', descriptionEn: '1 pc capelin roe.', descriptionZh: '1个毛鳞鱼籽握寿司。', price: 3.0 },
+          { nameEn: 'Tobiko Nigiri', nameZh: '飞鱼籽握寿司', descriptionEn: '1 pc flying fish roe.', descriptionZh: '1个飞鱼籽握寿司。', price: 3.25 },
+          { nameEn: 'Amaebi Nigiri', nameZh: '甜虾握寿司', descriptionEn: '1 pc raw sweet shrimp.', descriptionZh: '1个生甜虾握寿司。', price: 4.5 },
+          { nameEn: 'Tako Nigiri', nameZh: '章鱼握寿司', descriptionEn: '1 pc octopus.', descriptionZh: '1个章鱼握寿司。', price: 3.75 },
+          { nameEn: 'Wild Salmon Nigiri', nameZh: '野生三文鱼握寿司', descriptionEn: '1 pc wild salmon.', descriptionZh: '1个野生三文鱼握寿司。', price: 4.25 },
+          { nameEn: 'Tobiko & Quail Egg Nigiri', nameZh: '飞鱼籽鹌鹑蛋握寿司', descriptionEn: '1 pc tobiko topped with quail egg.', descriptionZh: '1个飞鱼籽配鹌鹑蛋握寿司。', price: 4.0 },
+          { nameEn: 'Smoked Salmon Nigiri', nameZh: '烟熏三文鱼握寿司', descriptionEn: '1 pc smoked salmon.', descriptionZh: '1个烟熏三文鱼握寿司。', price: 3.75 },
+          { nameEn: 'Toro Nigiri', nameZh: '金枪鱼腹握寿司', descriptionEn: '1 pc fatty tuna belly.', descriptionZh: '1个金枪鱼腹部握寿司。', price: 4.0 },
+          { nameEn: 'Hotategai Nigiri', nameZh: '扇贝握寿司', descriptionEn: '1 pc scallop.', descriptionZh: '1个扇贝握寿司。', price: 4.0 },
+          { nameEn: 'Unagi Nigiri', nameZh: '鳗鱼握寿司', descriptionEn: '1 pc grilled eel.', descriptionZh: '1个烤鳗鱼握寿司。', price: 4.25 },
+          { nameEn: 'Ikura Nigiri', nameZh: '三文鱼籽握寿司', descriptionEn: '1 pc salmon roe.', descriptionZh: '1个三文鱼籽握寿司。', price: 4.0 },
+          { nameEn: 'Hamachi Nigiri', nameZh: '鰤鱼握寿司', descriptionEn: '1 pc yellowtail.', descriptionZh: '1个鰤鱼握寿司。', price: 4.5 },
+          { nameEn: 'Uni Nigiri', nameZh: '海胆握寿司', descriptionEn: 'Sea urchin nigiri. Currently sold out.', descriptionZh: '海胆握寿司，目前售罄。', price: null, status: 'sold-out', notes: 'Check back for availability.' }
+        ]
+      },
+      {
+        id: 'rolls',
+        titleEn: 'Rolls & Cones',
+        titleZh: '寿司卷与手卷',
+        items: [
+          { nameEn: 'Asparagus Roll', nameZh: '芦笋卷', descriptionEn: '6 pcs roll with asparagus.', descriptionZh: '6件芦笋卷。', price: 4.25 },
+          { nameEn: 'Tuna Roll', nameZh: '金枪鱼卷', descriptionEn: '6 pcs tuna maki.', descriptionZh: '6件金枪鱼卷。', price: 4.5 },
+          { nameEn: 'Salmon Roll', nameZh: '三文鱼卷', descriptionEn: '6 pcs salmon maki.', descriptionZh: '6件三文鱼卷。', price: 4.5 },
+          { nameEn: 'Kappa Roll', nameZh: '黄瓜卷', descriptionEn: '6 pcs cucumber roll.', descriptionZh: '6件黄瓜卷。', price: 4.0 },
+          { nameEn: 'Oshinko Roll', nameZh: '腌菜卷', descriptionEn: '6 pcs pickled radish roll.', descriptionZh: '6件腌萝卜卷。', price: 4.0 },
+          { nameEn: 'Kanpyo Roll', nameZh: '干瓢卷', descriptionEn: '6 pcs seasoned gourd strip roll.', descriptionZh: '6件干瓢卷。', price: 4.0 },
+          { nameEn: 'Tamago Roll', nameZh: '玉子卷', descriptionEn: '6 pcs egg roll with mayo.', descriptionZh: '6件鸡蛋卷，含蛋黄酱。', price: 4.0 },
+          { nameEn: 'Negitoro Roll', nameZh: '金枪鱼腹葱卷', descriptionEn: '6 pcs toro (tuna belly) with scallion.', descriptionZh: '6件金枪鱼腹肉配葱卷。', price: 5.75 },
+          { nameEn: 'Negihama Roll', nameZh: '鰤鱼葱卷', descriptionEn: '6 pcs hamachi with scallion.', descriptionZh: '6件鰤鱼配葱卷。', price: 5.75 },
+          { nameEn: 'Wild Salmon Roll', nameZh: '野生三文鱼卷', descriptionEn: '6 pcs wild salmon roll.', descriptionZh: '6件野生三文鱼卷。', price: 5.75 },
+          { nameEn: 'California Roll', nameZh: '加州卷', descriptionEn: '8 pcs with cucumber, crab, avocado, and mayo.', descriptionZh: '8件黄瓜、蟹肉、牛油果、蛋黄酱卷。', price: 6.75 },
+          { nameEn: 'BC Roll', nameZh: 'BC卷', descriptionEn: '6 pcs with salmon skin, mayo, fish roe, cucumber, light eel sauce.', descriptionZh: '6件三文鱼皮、蛋黄酱、鱼籽、黄瓜，淋淡鳗鱼酱。', price: 7.25 },
+          { nameEn: 'Vegetable Roll', nameZh: '蔬菜卷', descriptionEn: '6 pcs with radish, carrot, red cabbage, cucumber, avocado, lettuce, mayo.', descriptionZh: '6件萝卜、胡萝卜、紫甘蓝、黄瓜、牛油果、生菜与蛋黄酱卷。', price: 7.25 },
+          { nameEn: 'Avocado Roll', nameZh: '牛油果卷', descriptionEn: '8 pcs avocado roll with mayo.', descriptionZh: '8件牛油果卷，含蛋黄酱。', price: 6.75 },
+          { nameEn: 'Avocado & Salmon Roll', nameZh: '牛油果三文鱼卷', descriptionEn: '8 pcs with salmon, avocado, mayo, cucumber.', descriptionZh: '8件牛油果、三文鱼、黄瓜与蛋黄酱卷。', price: 7.75 },
+          { nameEn: 'Avocado & Tuna Roll', nameZh: '牛油果金枪鱼卷', descriptionEn: '8 pcs with tuna, avocado, mayo, cucumber.', descriptionZh: '8件牛油果、金枪鱼、黄瓜与蛋黄酱卷。', price: 7.75 },
+          { nameEn: 'Spicy Tuna Roll', nameZh: '辣味金枪鱼卷', descriptionEn: '8 pcs spicy tuna with cucumber and sesame inside.', descriptionZh: '8件辣味金枪鱼配黄瓜，卷内含芝麻。', price: 7.75, notes: 'Served with spicy teriyaki sauce; sesame seeds cannot be removed.' },
+          { nameEn: 'Spicy Salmon Roll', nameZh: '辣味三文鱼卷', descriptionEn: '8 pcs spicy salmon with cucumber.', descriptionZh: '8件辣味三文鱼配黄瓜。', price: 7.75, notes: 'Served with spicy teriyaki sauce.' },
+          { nameEn: 'Chopped Scallop Roll', nameZh: '碎扇贝卷', descriptionEn: '8 pcs chopped scallop with mayo and cucumber.', descriptionZh: '8件碎扇贝、蛋黄酱与黄瓜卷。', price: 7.5 },
+          { nameEn: 'Spicy Chopped Scallop Roll', nameZh: '辣味碎扇贝卷', descriptionEn: '8 pcs chopped scallop with spicy mayo.', descriptionZh: '8件碎扇贝配辣酱与蛋黄酱。', price: 7.5 },
+          { nameEn: 'Ebi Roll', nameZh: '虾卷', descriptionEn: '8 pcs shrimp with mayo and cucumber.', descriptionZh: '8件虾、蛋黄酱与黄瓜卷。', price: 7.75 },
+          { nameEn: 'Smoked Salmon Roll', nameZh: '烟熏三文鱼卷', descriptionEn: '6 pcs smoked salmon, crab meat, cucumber, fish roe, avocado.', descriptionZh: '6件烟熏三文鱼、蟹肉、黄瓜、鱼籽与牛油果卷。', price: 8.5 },
+          { nameEn: 'Beef Teriyaki Roll', nameZh: '牛肉照烧卷', descriptionEn: '6 pcs beef with house teriyaki and mayo.', descriptionZh: '6件牛肉配特制照烧酱与蛋黄酱卷。', price: 8.5 },
+          { nameEn: 'Chicken Teriyaki Roll', nameZh: '鸡肉照烧卷', descriptionEn: '8 pcs fried chicken with teriyaki sauce and mayo.', descriptionZh: '8件炸鸡配照烧酱与蛋黄酱卷。', price: 8.5 },
+          { nameEn: 'Sweet Potato Tempura Roll', nameZh: '红薯天妇罗卷', descriptionEn: '6 pcs fried sweet potato, mayo, cucumber, lettuce, avocado.', descriptionZh: '6件炸红薯、蛋黄酱、黄瓜、生菜、牛油果卷。', price: 7.5 },
+          { nameEn: 'Deep Fried Roll', nameZh: '炸卷', descriptionEn: '6 pcs deep-fried tuna or salmon roll with lettuce and mayo.', descriptionZh: '6件炸金枪鱼或三文鱼卷，配生菜与蛋黄酱。', price: 8.5, notes: 'Served with light eel sauce.' },
+          { nameEn: 'Dynamite Roll', nameZh: '爆炸卷', descriptionEn: '6 pcs with fish roe, cucumber, avocado, 2 prawn tempura, 1 sweet potato tempura, lettuce.', descriptionZh: '6件鱼籽、黄瓜、牛油果、2只虾天妇罗、1片红薯天妇罗与生菜卷。', price: 8.5, notes: 'Served with thousand island dressing.' },
+          { nameEn: 'Spicy Tuna Tempura Roll', nameZh: '辣味金枪鱼天妇罗卷', descriptionEn: '6 pcs deep-fried spicy tuna tempura with cucumber and lettuce.', descriptionZh: '6件炸辣金枪鱼天妇罗卷，配黄瓜与生菜。', price: 9.25, notes: 'Served with light eel sauce.' },
+          { nameEn: 'Bill\'s Roll', nameZh: 'Bill卷', descriptionEn: '6 pcs smoked salmon, crab meat, cucumber, fish roe, avocado, sweet potato tempura.', descriptionZh: '6件烟熏三文鱼、蟹肉、黄瓜、鱼籽、牛油果与红薯天妇罗卷。', price: 8.5 },
+          { nameEn: 'Smoked Salmon Cream Cheese Roll', nameZh: '烟熏三文鱼奶酪卷', descriptionEn: '8 pcs smoked salmon, cream cheese, paprika, crab meat.', descriptionZh: '8件烟熏三文鱼、奶油奶酪、红椒粉与蟹肉卷。', price: 10.0, notes: 'Contains dairy.' },
+          { nameEn: 'Filet-o-fish Roll', nameZh: '炸鱼卷', descriptionEn: '8 pcs fried fish, tartar sauce, cucumber.', descriptionZh: '8件炸鱼片、塔塔酱与黄瓜卷。', price: 9.0, notes: 'Comes with extra tartar sauce.' },
+          { nameEn: 'Alaska Roll', nameZh: '阿拉斯加卷', descriptionEn: '8 pcs fish roe, avocado, cucumber, mayo, special sauce, salmon.', descriptionZh: '8件鱼籽、牛油果、黄瓜、蛋黄酱、特制酱与三文鱼卷。', price: 9.0, notes: 'Finished with salad dressing.' },
+          { nameEn: 'Unagi Roll', nameZh: '鳗鱼卷', descriptionEn: '8 pcs eel, mayo, cucumber.', descriptionZh: '8件鳗鱼、蛋黄酱与黄瓜卷。', price: 9.75 },
+          { nameEn: 'House Roll', nameZh: '招牌卷', descriptionEn: '6 pcs salmon, tuna, crab meat, lettuce, fish roe, cucumber, avocado, tamago.', descriptionZh: '6件三文鱼、金枪鱼、蟹肉、生菜、鱼籽、黄瓜、牛油果与玉子卷。', price: 11.0 },
+          { nameEn: 'Deep Fried California Roll', nameZh: '炸加州卷', descriptionEn: 'Deep-fried California roll.', descriptionZh: '炸制加州卷。', price: 11.0, notes: 'Served with spicy mayo and eel sauce.' },
+          { nameEn: 'Dragon Roll', nameZh: '龙卷', descriptionEn: '8 pcs fish roe, eel, avocado, cucumber, light eel sauce.', descriptionZh: '8件鱼籽、鳗鱼、牛油果、黄瓜，淋淡鳗鱼酱。', price: 10.75 },
+          { nameEn: 'Rainbow Roll', nameZh: '彩虹卷', descriptionEn: '8 pcs with cucumber, mayo, tamago topped with salmon, tuna, avocado, snapper, mackerel.', descriptionZh: '8件黄瓜、蛋黄酱、玉子卷，表面覆三文鱼、金枪鱼、牛油果、鲷鱼与青花鱼。', price: 14.0 },
+          { nameEn: 'Futomaki (Half)', nameZh: '太卷（半份）', descriptionEn: '5 pcs with cucumber, tamago, crab stick, crab meat, fish powder, kanpyo.', descriptionZh: '5件黄瓜、玉子、蟹棒、蟹肉、鱼粉与干瓢卷。', price: 8.5 },
+          { nameEn: 'Futomaki (Full)', nameZh: '太卷（全份）', descriptionEn: '10 pcs with cucumber, tamago, crab stick, crab meat, fish powder, kanpyo.', descriptionZh: '10件黄瓜、玉子、蟹棒、蟹肉、鱼粉与干瓢卷。', price: 17.0 },
+          { nameEn: 'Rice Maki', nameZh: '米卷', descriptionEn: 'Simple rice roll.', descriptionZh: '白米卷。', price: 3.75 }
+        ]
+      },
+      {
+        id: 'special-rolls',
+        titleEn: 'Special Rolls',
+        titleZh: '特制卷',
+        items: [
+          { nameEn: 'Double Dragon Roll', nameZh: '双龙卷', descriptionEn: 'Inside: eel, avocado, cucumber, mayo. Outside: eel, avocado, fish roe, scallion with eel sauce.', descriptionZh: '内层：鳗鱼、牛油果、黄瓜、蛋黄酱；外层：鳗鱼、牛油果、鱼籽、葱，淋鳗鱼酱。', price: 20.5 },
+          { nameEn: 'Under The Sea', nameZh: '海底卷', descriptionEn: 'Inside: cucumber, avocado, baked salmon, mayo. Outside: seaweed, sesame, fish roe.', descriptionZh: '内层：黄瓜、牛油果、烤三文鱼、蛋黄酱；外层：海藻、芝麻、鱼籽。', price: 21.5, notes: 'Sauces: wasabi mayo, teriyaki, chili oil, tartar.' },
+          { nameEn: 'Salmon Blossom', nameZh: '三文鱼花卷', descriptionEn: 'Inside: fish roe, cucumber, avocado, mayo, two prawn tempura. Outside: chopped salmon with spicy mayo, fish roe, fried potato strings.', descriptionZh: '内层：鱼籽、黄瓜、牛油果、蛋黄酱、2只虾天妇罗；外层：碎三文鱼配辣蛋黄酱、鱼籽、炸土豆丝。', price: 21.5, notes: 'Sauces: wasabi mayo, teriyaki, eel sauce.' },
+          { nameEn: 'Holly Garlic Roll', nameZh: '圣蒜卷', descriptionEn: 'Inside: asparagus, bacon, chopped scallop. Outside: garlic powder, scallion, fish roe.', descriptionZh: '内层：芦笋、培根、碎扇贝；外层：蒜粉、葱、鱼籽。', price: 22.6, notes: 'Sauces: spicy mayo and eel sauce.' },
+          { nameEn: 'Chili Billi Bite (4 pcs)', nameZh: '辣味Billi卷（4件）', descriptionEn: 'Jalapeño, mozzarella, spicy tuna, fish roe, scallion with balsamic glaze.', descriptionZh: '墨西哥辣椒、马苏里拉奶酪、辣金枪鱼、鱼籽、葱，淋黑醋酱。', price: 8.5, notes: 'Contains dairy; served with sour cream sauce.' },
+          { nameEn: 'Aburi Beef Battera', nameZh: '炙烤牛肉箱寿司', descriptionEn: 'Pressed sushi with red pepper, kanpyo, seaweed flakes topped with seared beef and bean sprouts.', descriptionZh: '箱押寿司，内层红椒、干瓢、海苔碎，外层铺炙烤牛肉与豆芽。', price: 24.75, notes: 'Sauces: eel sauce and mayo.' },
+          { nameEn: 'Snow Village', nameZh: '雪村卷', descriptionEn: 'Inside: crab meat, cucumber, avocado, prawn tempura. Outside: tuna and tempura flakes.', descriptionZh: '内层：蟹肉、黄瓜、牛油果、虾天妇罗；外层：金枪鱼与天妇罗碎。', price: 19.5, notes: 'Sauces: tartar and eel sauce.' },
+          { nameEn: 'A Guilty Pleasure', nameZh: '罪恶卷', descriptionEn: 'Inside: spam, bacon, crab meat, paprika, cream cheese. Outside: potato crumbs and mozzarella.', descriptionZh: '内层：午餐肉、培根、蟹肉、红椒粉、奶油奶酪；外层：土豆碎与马苏里拉。', price: 21.5, notes: 'Sauce: ketchup. Contains dairy.' },
+          { nameEn: 'Burning Cheese Roll', nameZh: '火焰奶酪卷', descriptionEn: 'No rice. Inside: salmon and cream cheese. Outside: fish roe, scallion, sesame, lemon.', descriptionZh: '无米卷，内层三文鱼与奶油奶酪；外层鱼籽、葱、芝麻、柠檬。', price: 16.25, notes: 'Sauces: spicy sauce, spicy mayo, teriyaki, Japanese BBQ. Contains dairy.' },
+          { nameEn: 'Mangodise Roll', nameZh: '芒果天堂卷', descriptionEn: 'Inside: crab meat, mango, cucumber. Outside: shrimp with mango sauce.', descriptionZh: '内层：蟹肉、芒果、黄瓜；外层：虾，搭配芒果酱。', price: 16.25 },
+          { nameEn: 'Heaven\'s Garden Roll', nameZh: '天堂花园卷', descriptionEn: 'Inside: cucumber, avocado, pickles, kanpyo. Outside: tofu skin, spinach, alfalfa sprouts.', descriptionZh: '内层：黄瓜、牛油果、腌菜、干瓢；外层：豆皮、菠菜与苜蓿芽。', price: 19.5, notes: 'Sauces include nut-based sesame dressing and salad dressing.' },
+          { nameEn: 'Bombshell Roll', nameZh: '炸弹卷', descriptionEn: 'Deep-fried California roll paired with deep-fried marinated scallop.', descriptionZh: '炸制加州卷搭配炸腌扇贝。', price: 20.2, notes: 'Sauces: spicy teriyaki, chili oil, wasabi mayo, spicy mayo.' },
+          { nameEn: 'Philly Roll', nameZh: '费城卷', descriptionEn: 'Inside: cream cheese, avocado, yam tempura. Outside: smoked salmon and fish roe.', descriptionZh: '内层：奶油奶酪、牛油果、山药天妇罗；外层：烟熏三文鱼与鱼籽。', price: 18.25, notes: 'Sauces: spicy mayo and teriyaki. Contains dairy.' },
+          { nameEn: 'Spider Roll', nameZh: '螃蟹卷', descriptionEn: 'Inside: soft shell crab, lettuce, cucumber, mayo. Outside: fish roe.', descriptionZh: '内层：软壳蟹、生菜、黄瓜、蛋黄酱；外层：鱼籽。', price: 17.25, notes: 'Sauces: mayo and Japanese BBQ sauce.' },
+          { nameEn: 'Special Mango Roll', nameZh: '特制芒果卷', descriptionEn: 'Inside: mango, cucumber, avocado, mayo. Outside: mango slices with pineapple sauce.', descriptionZh: '内层：芒果、黄瓜、牛油果、蛋黄酱；外层覆芒果片，配菠萝酱。', price: 17.25 },
+          { nameEn: 'Fantastic Roll', nameZh: '极品卷', descriptionEn: 'Inside: two prawn tempura, crab meat, cucumber, avocado. Outside: spicy tuna, scallion, tempura flakes.', descriptionZh: '内层：2只虾天妇罗、蟹肉、黄瓜、牛油果；外层：辣金枪鱼、葱与天妇罗碎。', price: 19.5, notes: 'Sauce: spicy mayo.' },
+          { nameEn: 'On Cloud 9', nameZh: '九霄云外卷', descriptionEn: 'Inside: smoked salmon, hokkigai, paprika, shrimp, tamago, crab meat. Outside: chopped scallop and fish roe.', descriptionZh: '内层：烟熏三文鱼、北极贝、红椒粉、虾、玉子、蟹肉；外层：碎扇贝与鱼籽。', price: 21.5, notes: 'Sauces: wasabi mayo and spicy mayo.' },
+          { nameEn: 'Mura Special Roll', nameZh: 'Mura特制卷', descriptionEn: 'Inside: tamago, shrimp, cucumber, mayo. Outside: salmon, avocado, fish roe.', descriptionZh: '内层：玉子、虾、黄瓜、蛋黄酱；外层：三文鱼、牛油果与鱼籽。', price: 19.5, notes: 'Sauces: mayo, spicy mayo, salad dressing.' },
+          { nameEn: 'Tuna On Fire Roll', nameZh: '火焰金枪鱼卷', descriptionEn: 'Inside: tuna, tamago, shrimp, two prawn tempura. Outside: torched tuna, fish roe, scallion, tempura flakes.', descriptionZh: '内层：金枪鱼、玉子、虾、2只虾天妇罗；外层：炙烧金枪鱼、鱼籽、葱、天妇罗碎。', price: 21.5, notes: 'Sauces: teriyaki, spicy mayo, wasabi mayo.' },
+          { nameEn: 'Awesome Roll', nameZh: '极赞卷', descriptionEn: 'Inside: crab meat, cucumber, avocado, mayo. Outside: salmon, scallion, fish roe, bonito flakes.', descriptionZh: '内层：蟹肉、黄瓜、牛油果、蛋黄酱；外层：三文鱼、葱、鱼籽、木鱼花。', price: 19.5, notes: 'Sauces: spicy mayo and teriyaki.' },
+          { nameEn: 'Calamari Crush', nameZh: '炸鱿鱼卷', descriptionEn: 'Inside: fried calamari, onion, celery, mayo, avocado. Outside: potato crumbs, fish roe, sesame.', descriptionZh: '内层：炸鱿鱼、洋葱、芹菜、蛋黄酱、牛油果；外层：土豆碎、鱼籽、芝麻。', price: 22.75, notes: 'Sauces: spicy mayo and teriyaki.' },
+          { nameEn: 'Red Roll', nameZh: '红卷', descriptionEn: 'Inside: chopped scallop, cucumber. Outside: spicy tuna, scallion, sesame.', descriptionZh: '内层：碎扇贝、黄瓜；外层：辣金枪鱼、葱、芝麻。', price: 17.25 },
+          { nameEn: 'Crazy Rabbit Roll', nameZh: '疯狂兔子卷', descriptionEn: 'No rice. Inside: cucumber, eel, tamago, shrimp, crab meat, yam tempura. Outside: tempura flakes and fish roe.', descriptionZh: '无米卷，内层黄瓜、鳗鱼、玉子、虾、蟹肉、山药天妇罗；外层天妇罗碎与鱼籽。', price: 18.25, notes: 'Sauces: spicy mayo and chili sauce.' },
+          { nameEn: 'Volcano Roll (Tuna)', nameZh: '火山卷（金枪鱼）', descriptionEn: 'Spicy tuna sashimi over deep-fried spicy tuna & crab meat roll.', descriptionZh: '辣金枪鱼生鱼片覆于炸辣金枪鱼与蟹肉卷上。', price: 23.75, notes: 'Sauces: spicy teriyaki, eel sauce, mayo, Japanese BBQ.' },
+          { nameEn: 'Volcano Roll (Salmon)', nameZh: '火山卷（三文鱼）', descriptionEn: 'Spicy salmon sashimi over deep-fried spicy tuna & crab meat roll.', descriptionZh: '辣三文鱼生鱼片覆于炸辣金枪鱼与蟹肉卷上。', price: 23.75, notes: 'Sauces: spicy teriyaki, eel sauce, mayo, Japanese BBQ.' },
+          { nameEn: 'Aburi Salmon Battera', nameZh: '炙烤三文鱼箱寿司', descriptionEn: 'Pressed sushi with cream cheese and seaweed flakes topped with torched salmon, jalapeño, mozzarella.', descriptionZh: '箱押寿司，内层奶油奶酪与海苔碎，外层铺炙烤三文鱼、墨西哥辣椒与马苏里拉。', price: 24.75, notes: 'Sauces: mayo, wasabi mayo, chili oil, eel sauce. Contains dairy.' }
+        ]
+      },
+      {
+        id: 'noodles',
+        titleEn: 'Noodle',
+        titleZh: '面类',
+        items: [
+          { nameEn: 'Mentaiko Udon', nameZh: '明太子乌冬', descriptionEn: 'Creamy mentaiko, onion, mushroom, pepper, tomato, seaweed flakes.', descriptionZh: '明太子、奶油、洋葱、蘑菇、胡椒、番茄、海苔碎。', price: 21.25, notes: 'Contains dairy.' },
+          { nameEn: 'Donkotsu Ramen', nameZh: '豚骨拉面', descriptionEn: 'Pork bone broth with soft-boiled egg, bean sprouts, fish cake, scallion.', descriptionZh: '豚骨汤配溏心蛋、豆芽、鱼板、葱。', price: 21.25 },
+          { nameEn: 'Pork Yakisoba', nameZh: '猪肉炒面', descriptionEn: 'Stir-fried noodles with bacon, cabbage, onion, carrot, broccoli, bonito flakes, mushroom, mayo.', descriptionZh: '培根、卷心菜、洋葱、胡萝卜、西兰花、木鱼花、蘑菇、蛋黄酱炒面。', price: 19.25 },
+          { nameEn: 'Tempura Udon', nameZh: '天妇罗乌冬', descriptionEn: 'Udon served with appetizer tempura.', descriptionZh: '乌冬面配前菜天妇罗。', price: 19.25 },
+          { nameEn: 'Kitsune Udon', nameZh: '狐狸乌冬', descriptionEn: 'Clear broth udon with tofu skin.', descriptionZh: '清汤乌冬配豆皮。', price: 13.5 },
+          { nameEn: 'Vegetable Udon', nameZh: '蔬菜乌冬', descriptionEn: 'Udon noodles with assorted vegetables.', descriptionZh: '蔬菜乌冬面。', price: 15.0 },
+          { nameEn: 'Seafood Udon', nameZh: '海鲜乌冬', descriptionEn: 'Udon with shrimp, fish ball, mussel, crab stick.', descriptionZh: '乌冬配虾、鱼丸、青口、蟹肉棒。', price: 21.25 },
+          { nameEn: 'Chicken Udon', nameZh: '鸡肉乌冬', descriptionEn: 'Udon with chicken and vegetables.', descriptionZh: '鸡肉乌冬面。', price: 19.25 },
+          { nameEn: 'Beef Udon', nameZh: '牛肉乌冬', descriptionEn: 'Udon with beef and vegetables.', descriptionZh: '牛肉乌冬面。', price: 19.25 },
+          { nameEn: 'Chicken Yaki Udon', nameZh: '鸡肉炒乌冬', descriptionEn: 'Pan-fried chicken with udon noodles and vegetables.', descriptionZh: '煎鸡肉配乌冬面及蔬菜。', price: 19.25 },
+          { nameEn: 'Beef Yaki Udon', nameZh: '牛肉炒乌冬', descriptionEn: 'Pan-fried beef with udon noodles and vegetables.', descriptionZh: '煎牛肉配乌冬面及蔬菜。', price: 19.25 },
+          { nameEn: 'Kimchi Yaki Udon', nameZh: '泡菜炒乌冬', descriptionEn: 'Kimchi with stir-fried udon and vegetables.', descriptionZh: '泡菜配乌冬面及蔬菜。', price: 19.25 },
+          { nameEn: 'Seafood Yaki Udon', nameZh: '海鲜炒乌冬', descriptionEn: 'Pan-fried seafood with udon and vegetables.', descriptionZh: '煎海鲜配乌冬面及蔬菜。', price: 21.25 },
+          { nameEn: 'Vegetable Yaki Udon', nameZh: '蔬菜炒乌冬', descriptionEn: 'Vegetarian stir-fried udon.', descriptionZh: '蔬菜炒乌冬面。', price: 15.0 },
+          { nameEn: 'Spicy Seafood Jjampong', nameZh: '辣海鲜炸酱面', descriptionEn: 'Spicy seafood noodle soup with shrimp, squid, assorted seafood, mussels (ingredients may vary seasonally).', descriptionZh: '辣味海鲜汤面：虾、鱿鱼、多种海鲜、青口（食材随季节变化）。', price: 22.5 }
+        ]
+      },
+      {
+        id: 'donburi',
+        titleEn: 'Donburi',
+        titleZh: '丼类',
+        items: [
+          { nameEn: 'Salmon Zuke Don', nameZh: '腌三文鱼丼', descriptionEn: 'Rice topped with marinated salmon.', descriptionZh: '米饭配腌制三文鱼。', price: 26.25 },
+          { nameEn: 'Ten Don', nameZh: '天妇罗丼', descriptionEn: 'Rice bowl with 1 prawn, zucchini, sweet potato, carrot tempura, fried egg, vegetables.', descriptionZh: '米饭上配1只虾、1片西葫芦、1片红薯、1片胡萝卜天妇罗，加煎蛋与蔬菜。', price: 19.25 },
+          { nameEn: 'Tuna Don', nameZh: '金枪鱼丼', descriptionEn: 'Sushi rice topped with tuna sashimi and garnishes.', descriptionZh: '寿司饭铺金枪鱼生鱼片及配料。', price: 24.5 },
+          { nameEn: 'Salmon Don', nameZh: '三文鱼丼', descriptionEn: 'Sushi rice topped with salmon sashimi and garnishes.', descriptionZh: '寿司饭铺三文鱼生鱼片及配料。', price: 24.5 },
+          { nameEn: 'Wild Salmon Don', nameZh: '野生三文鱼丼', descriptionEn: 'Sushi rice topped with wild salmon sashimi.', descriptionZh: '寿司饭铺野生三文鱼生鱼片及配料。', price: 28.0 },
+          { nameEn: 'Tuna & Salmon Don', nameZh: '金枪鱼三文鱼丼', descriptionEn: 'Sushi rice topped with tuna and salmon sashimi.', descriptionZh: '寿司饭铺金枪鱼与三文鱼生鱼片及配料。', price: 24.5 },
+          { nameEn: 'Spicy Tuna Don', nameZh: '辣金枪鱼丼', descriptionEn: 'Sushi rice topped with spicy tuna sashimi.', descriptionZh: '寿司饭铺辣味金枪鱼生鱼片及配料。', price: 26.25 },
+          { nameEn: 'Spicy Salmon Don', nameZh: '辣三文鱼丼', descriptionEn: 'Sushi rice topped with spicy salmon sashimi.', descriptionZh: '寿司饭铺辣味三文鱼生鱼片及配料。', price: 26.25 },
+          { nameEn: 'Spicy Wild Salmon Don', nameZh: '辣野生三文鱼丼', descriptionEn: 'Sushi rice topped with spicy wild salmon sashimi.', descriptionZh: '寿司饭铺辣味野生三文鱼生鱼片及配料。', price: 29.0 },
+          { nameEn: 'Unagi Don', nameZh: '鳗鱼丼', descriptionEn: 'Sushi rice topped with grilled eel.', descriptionZh: '寿司饭铺鳗鱼及配料。', price: 25.0 },
+          { nameEn: 'Chirashi Don', nameZh: '散寿司丼', descriptionEn: 'Sushi rice topped with assorted sashimi.', descriptionZh: '寿司饭铺各式生鱼片。', price: 32.0 },
+          { nameEn: 'Deluxe Chirashi Don', nameZh: '豪华散寿司丼', descriptionEn: 'Deluxe sushi rice bowl with premium sashimi selection.', descriptionZh: '寿司饭铺豪华组合生鱼片。', price: 39.0 },
+          { nameEn: 'Korean Style Spicy Chirashi Don', nameZh: '韩式辣味散寿司丼', descriptionEn: 'Rice with vegetables and assorted chopped sashimi, Korean-style spicy dressing.', descriptionZh: '米饭配蔬菜与各类切碎生鱼片，韩式辣酱调味。', price: 39.5 },
+          { nameEn: 'Poke Super Bowl', nameZh: '超级波奇碗', descriptionEn: 'Seasoned rice with spicy tuna, spicy salmon, onion, cucumber, seaweed, edamame, kale, avocado, mango, beet, alfalfa sprouts, red cabbage.', descriptionZh: '调味米饭配辣金枪鱼、辣三文鱼、洋葱、黄瓜、海藻、毛豆、羽衣甘蓝、牛油果、芒果、甜菜、苜蓿芽、紫甘蓝。', price: 30.0, notes: 'Contains dairy; includes wasabi mayo.' }
+        ]
+      },
+      {
+        id: 'entrees',
+        titleEn: 'Entrees',
+        titleZh: '主菜',
+        items: [
+          { nameEn: 'Chicken Teriyaki', nameZh: '鸡肉照烧', descriptionEn: 'Chicken with bean sprouts, broccoli, carrot, served with a small bowl of rice.', descriptionZh: '鸡肉配豆芽、西兰花、胡萝卜，附小碗白饭。', price: 19.25 },
+          { nameEn: 'Beef Teriyaki', nameZh: '牛肉照烧', descriptionEn: 'Beef with bean sprouts, broccoli, carrot, served with a small bowl of rice.', descriptionZh: '牛肉配豆芽、西兰花、胡萝卜，附小碗白饭。', price: 19.25 },
+          { nameEn: 'Tofu Teriyaki', nameZh: '豆腐照烧', descriptionEn: 'Tofu with bean sprouts, broccoli, carrot, served with a small bowl of rice.', descriptionZh: '豆腐配豆芽、西兰花、胡萝卜，附小碗白饭。', price: 19.25 },
+          { nameEn: 'Chicken Katsu', nameZh: '鸡排', descriptionEn: 'Breaded and fried chicken cutlet.', descriptionZh: '炸鸡排。', price: 20.25 },
+          { nameEn: 'Ton Katsu', nameZh: '猪排', descriptionEn: 'Breaded and fried pork cutlet.', descriptionZh: '炸猪排。', price: 20.25 },
+          { nameEn: 'Kimchi Fried Rice', nameZh: '泡菜炒饭', descriptionEn: 'Fried rice with kimchi, bacon, spam, and vegetables.', descriptionZh: '炒饭配泡菜、培根、午餐肉与蔬菜。', price: 19.25 }
+        ]
+      },
+      {
+        id: 'combinations',
+        titleEn: 'Combinations',
+        titleZh: '组合套餐',
+        items: [
+          { nameEn: 'Kids Combo', nameZh: '儿童套餐', descriptionEn: 'Half California roll, tamago roll, kappa roll, shrimp (2 pcs).', descriptionZh: '半份加州卷、玉子卷、黄瓜卷、虾2片。', price: 14.5 },
+          { nameEn: 'California Combo', nameZh: '加州卷套餐', descriptionEn: 'California roll, shrimp (1 pc), tuna (1 pc), salmon (2 pcs).', descriptionZh: '加州卷、虾1片、金枪鱼1片、三文鱼2片。', price: 16.75 },
+          { nameEn: 'BC Combo', nameZh: 'BC卷套餐', descriptionEn: 'BC roll, shrimp (1 pc), tuna (1 pc), salmon (2 pcs).', descriptionZh: 'BC卷、虾1片、金枪鱼1片、三文鱼2片。', price: 16.75 },
+          { nameEn: 'Mix Combo', nameZh: '混合卷套餐', descriptionEn: 'Half California roll, Dynamite roll, tuna roll, salmon roll.', descriptionZh: '半份加州卷、Dynamite卷、金枪鱼卷、三文鱼卷。', price: 19.75 },
+          { nameEn: 'Dynamite Combo', nameZh: '炸卷套餐', descriptionEn: 'Dynamite roll, shrimp (1 pc), tuna (1 pc), salmon (2 pcs).', descriptionZh: 'Dynamite卷、虾1片、金枪鱼1片、三文鱼2片。', price: 19.25 },
+          { nameEn: 'Tuna & Salmon Combo', nameZh: '金枪鱼三文鱼套餐', descriptionEn: 'Tuna roll, salmon roll, tuna sashimi (2 pcs), salmon sashimi (2 pcs).', descriptionZh: '金枪鱼卷、三文鱼卷、金枪鱼刺身2片、三文鱼刺身2片。', price: 18.75 },
+          { nameEn: 'Alaska Combo', nameZh: '阿拉斯加套餐', descriptionEn: 'Alaska roll, shrimp (1 pc), tuna (1 pc), salmon (2 pcs).', descriptionZh: '阿拉斯加卷、虾1片、金枪鱼1片、三文鱼2片。', price: 19.25 },
+          { nameEn: 'Spicy Tuna Combo', nameZh: '辣金枪鱼套餐', descriptionEn: 'Spicy tuna roll, kappa roll, spicy tuna sashimi.', descriptionZh: '辣金枪鱼卷、黄瓜卷、辣金枪鱼刺身。', price: 23.25 },
+          { nameEn: 'Spicy Salmon Combo', nameZh: '辣三文鱼套餐', descriptionEn: 'Spicy salmon roll, kappa roll, spicy salmon sashimi.', descriptionZh: '辣三文鱼卷、黄瓜卷、辣三文鱼刺身。', price: 23.25 },
+          { nameEn: 'Sashimi & Sushi Combo', nameZh: '刺身寿司套餐', descriptionEn: 'Tuna & salmon sashimi (2 pcs each), shrimp, tuna, salmon, tobiko, chopped scallop (1 pc each).', descriptionZh: '金枪鱼与三文鱼刺身各2片，虾、金枪鱼、三文鱼、飞鱼籽、碎扇贝各1片。', price: 23.5, notes: 'Original copy lists $23.25 in one column; confirm current price with restaurant.' },
+          { nameEn: 'Assorted Sushi Combo', nameZh: '综合寿司套餐', descriptionEn: 'Half tuna roll, half salmon roll, shrimp, tuna, salmon, squid, sweet shrimp, hokkigai, octopus, chopped scallop (1 pc each).', descriptionZh: '半份金枪鱼卷、半份三文鱼卷、虾、金枪鱼、三文鱼、鱿鱼、甜虾、北极贝、章鱼、碎扇贝各1片。', price: 28.0 },
+          { nameEn: 'Deluxe Assorted Sushi Combo', nameZh: '豪华综合寿司套餐', descriptionEn: 'Half tuna roll, half salmon roll, shrimp, tuna, salmon, hamachi, squid, eel, sweet shrimp, tobiko, hokkigai, chopped scallop, octopus (1 pc each).', descriptionZh: '半份金枪鱼卷、半份三文鱼卷、虾、金枪鱼、三文鱼、黄尾鱼、鱿鱼、鳗鱼、甜虾、飞鱼籽、北极贝、碎扇贝、章鱼各1片。', price: 39.0 }
+        ]
+      }
+    ];
+
+    const state = {
+      query: '',
+      showEnglish: true,
+      showChinese: true
+    };
+
+    const menuContainer = document.getElementById('menu');
+    const searchInput = document.getElementById('search');
+    const englishToggle = document.getElementById('toggle-english');
+    const chineseToggle = document.getElementById('toggle-chinese');
+    const expandAllButton = document.getElementById('expand-all');
+    const collapseAllButton = document.getElementById('collapse-all');
+    const resetButton = document.getElementById('reset-filters');
+    const resultsCount = document.getElementById('results-count');
+
+    function normalize(text) {
+      return text ? text.toString().toLowerCase().trim() : '';
+    }
+
+    function matchesQuery(item, term) {
+      if (!term) return true;
+      const fields = [item.nameEn, item.nameZh, item.descriptionEn, item.descriptionZh, item.notes];
+      return fields.some(field => normalize(field).includes(term));
+    }
+
+    function formatPrice(value) {
+      if (typeof value === 'number') {
+        return `$${value.toFixed(2)}`;
+      }
+      if (typeof value === 'string') {
+        return value.trim().startsWith('$') ? value.trim() : `$${value.trim()}`;
+      }
+      return '';
+    }
+
+    function buildItemCard(item) {
+      const card = document.createElement('article');
+      card.className = 'menu-item';
+      if (item.status === 'sold-out') {
+        card.classList.add('menu-item--sold-out');
+      }
+
+      const nameLines = [];
+      if (state.showEnglish) {
+        nameLines.push(`<span class="en">${item.nameEn}</span>`);
+      }
+      if (state.showChinese && item.nameZh) {
+        nameLines.push(`<span class="zh">${item.nameZh}</span>`);
+      }
+
+      const descriptionLines = [];
+      if (state.showEnglish && item.descriptionEn) {
+        descriptionLines.push(`<p class="en">${item.descriptionEn}</p>`);
+      }
+      if (state.showChinese && item.descriptionZh) {
+        descriptionLines.push(`<p class="zh">${item.descriptionZh}</p>`);
+      }
+
+      const price = formatPrice(item.price);
+      const notes = item.notes ? `<p class="menu-item__note">${item.notes}</p>` : '';
+      const badge = item.status === 'sold-out'
+        ? '<span class="badge badge--soldout">Sold Out 售罄</span>'
+        : '';
+
+      card.innerHTML = `
+        <div class="menu-item__header">
+          <div class="menu-item__names">
+            ${nameLines.join('')}
+          </div>
+          ${price ? `<strong class="menu-item__price">${price}</strong>` : ''}
+        </div>
+        ${descriptionLines.length ? `<div class="menu-item__descriptions">${descriptionLines.join('')}</div>` : ''}
+        ${notes}
+        ${badge}
+      `;
+
+      return card;
+    }
+
+    function renderMenu() {
+      const term = normalize(state.query);
+      const fragment = document.createDocumentFragment();
+      let itemsVisible = 0;
+
+      menuData.forEach(section => {
+        const matchingItems = section.items.filter(item => matchesQuery(item, term));
+        if (!matchingItems.length) return;
+
+        const sectionWrapper = document.createElement('section');
+        sectionWrapper.className = 'menu-section';
+        const details = document.createElement('details');
+        details.open = term.length > 0;
+
+        const summary = document.createElement('summary');
+        summary.innerHTML = `
+          <span class="section-heading">
+            <span>${section.titleEn}</span>
+            <span>${section.titleZh}</span>
+          </span>
+          <span class="section-count">${matchingItems.length}</span>
+        `;
+        details.append(summary);
+
+        const list = document.createElement('div');
+        list.className = 'menu-items';
+
+        matchingItems.forEach(item => {
+          list.append(buildItemCard(item));
+          itemsVisible += 1;
+        });
+
+        details.append(list);
+        sectionWrapper.append(details);
+        fragment.append(sectionWrapper);
+      });
+
+      menuContainer.innerHTML = '';
+      if (!itemsVisible) {
+        menuContainer.innerHTML = `<p class="empty-state">No matching dishes. 请尝试其他关键词。</p>`;
+      } else {
+        menuContainer.append(fragment);
+      }
+
+      resultsCount.textContent = `${itemsVisible} item${itemsVisible === 1 ? '' : 's'} showing`;
+    }
+
+    searchInput.addEventListener('input', (event) => {
+      state.query = event.target.value;
+      renderMenu();
+    });
+
+    englishToggle.addEventListener('change', () => {
+      if (!englishToggle.checked && !chineseToggle.checked) {
+        englishToggle.checked = true;
+      }
+      state.showEnglish = englishToggle.checked;
+      renderMenu();
+    });
+
+    chineseToggle.addEventListener('change', () => {
+      if (!chineseToggle.checked && !englishToggle.checked) {
+        chineseToggle.checked = true;
+      }
+      state.showChinese = chineseToggle.checked;
+      renderMenu();
+    });
+
+    expandAllButton.addEventListener('click', () => {
+      menuContainer.querySelectorAll('details').forEach(details => {
+        details.open = true;
+      });
+    });
+
+    collapseAllButton.addEventListener('click', () => {
+      menuContainer.querySelectorAll('details').forEach(details => {
+        details.open = false;
+      });
+    });
+
+    resetButton.addEventListener('click', () => {
+      state.query = '';
+      state.showEnglish = true;
+      state.showChinese = true;
+      searchInput.value = '';
+      englishToggle.checked = true;
+      chineseToggle.checked = true;
+      renderMenu();
+      searchInput.focus();
+    });
+
+    renderMenu();
+  </script>
+</body>
+</html>
