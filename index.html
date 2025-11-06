@@ -86,15 +86,21 @@
       border: 1px solid var(--border);
       padding: 0.75rem 1.15rem;
       font-size: 1rem;
-      transition: border-color 120ms ease, box-shadow 120ms ease;
-      background: rgba(249, 250, 251, 0.9);
+      transition: border-color 120ms ease, box-shadow 120ms ease, background 160ms ease;
+      background: #0f172a;
+      color: #f9fafb;
+      caret-color: var(--accent);
+    }
+
+    .field input::placeholder {
+      color: rgba(248, 250, 252, 0.6);
     }
 
     .field input:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: 0 0 0 3px var(--accent-soft);
-      background: #fff;
+      background: #111c34;
     }
 
     .toggles, .controls__buttons {
@@ -187,7 +193,7 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: #0f172a;
+      color: var(--text);
     }
 
     .menu-section summary::-webkit-details-marker {
@@ -200,11 +206,24 @@
       gap: 0.15rem;
     }
 
-    .section-heading span:last-child {
+    .section-heading .en {
+      font-size: 1rem;
+      font-weight: 700;
+      color: inherit;
+      letter-spacing: 0.08em;
+    }
+
+    .section-heading .zh {
       font-size: 0.85rem;
       font-weight: 500;
       color: var(--text-muted);
       letter-spacing: 0.08em;
+    }
+
+    .section-heading .zh:only-child {
+      font-size: 1rem;
+      font-weight: 700;
+      color: inherit;
     }
 
     .section-count {
@@ -270,6 +289,12 @@
       font-weight: 600;
       color: var(--text-muted);
       letter-spacing: 0.04em;
+    }
+
+    .menu-item__names .zh:only-child {
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 1.05rem;
     }
 
     .menu-item__price {
@@ -367,12 +392,18 @@
       }
 
       .field input {
-        background: rgba(15, 23, 42, 0.75);
+        background: #020617;
+        border-color: rgba(148, 163, 184, 0.45);
         color: var(--text);
+        caret-color: var(--accent);
       }
 
       .field input::placeholder {
         color: rgba(226, 232, 240, 0.55);
+      }
+
+      .field input:focus {
+        background: #111c34;
       }
     }
   </style>
@@ -693,6 +724,19 @@
       showChinese: true
     };
 
+    function isLanguageVisible(lang) {
+      return lang === 'en' ? state.showEnglish : state.showChinese;
+    }
+
+    function renderLangText(content, lang, tag = 'span', className = '') {
+      if (!content || !isLanguageVisible(lang)) {
+        return '';
+      }
+      const classes = [className.trim(), `lang-${lang}`].filter(Boolean).join(' ');
+      const langAttribute = lang === 'en' ? 'en' : 'zh';
+      return `<${tag} class="${classes}" lang="${langAttribute}">${content}</${tag}>`;
+    }
+
     const menuContainer = document.getElementById('menu');
     const searchInput = document.getElementById('search');
     const englishToggle = document.getElementById('toggle-english');
@@ -729,26 +773,30 @@
         card.classList.add('menu-item--sold-out');
       }
 
-      const nameLines = [];
-      if (state.showEnglish) {
-        nameLines.push(`<span class="en">${item.nameEn}</span>`);
-      }
-      if (state.showChinese && item.nameZh) {
-        nameLines.push(`<span class="zh">${item.nameZh}</span>`);
-      }
+      const nameLines = [
+        renderLangText(item.nameEn, 'en', 'span', 'en'),
+        renderLangText(item.nameZh, 'zh', 'span', 'zh')
+      ].filter(Boolean);
 
-      const descriptionLines = [];
-      if (state.showEnglish && item.descriptionEn) {
-        descriptionLines.push(`<p class="en">${item.descriptionEn}</p>`);
-      }
-      if (state.showChinese && item.descriptionZh) {
-        descriptionLines.push(`<p class="zh">${item.descriptionZh}</p>`);
-      }
+      const descriptionLines = [
+        renderLangText(item.descriptionEn, 'en', 'p', 'en'),
+        renderLangText(item.descriptionZh, 'zh', 'p', 'zh')
+      ].filter(Boolean);
 
       const price = formatPrice(item.price);
       const notes = item.notes ? `<p class="menu-item__note">${item.notes}</p>` : '';
-      const badge = item.status === 'sold-out'
-        ? '<span class="badge badge--soldout">Sold Out 售罄</span>'
+      const soldOutTextParts = [];
+      if (item.status === 'sold-out') {
+        if (isLanguageVisible('en')) {
+          soldOutTextParts.push('Sold Out');
+        }
+        if (isLanguageVisible('zh')) {
+          soldOutTextParts.push('售罄');
+        }
+      }
+      const badgeText = soldOutTextParts.join(' / ');
+      const badge = badgeText
+        ? `<span class="badge badge--soldout">${badgeText}</span>`
         : '';
 
       card.innerHTML = `
@@ -781,13 +829,14 @@
         details.open = term.length > 0;
 
         const summary = document.createElement('summary');
-        summary.innerHTML = `
-          <span class="section-heading">
-            <span>${section.titleEn}</span>
-            <span>${section.titleZh}</span>
-          </span>
-          <span class="section-count">${matchingItems.length}</span>
-        `;
+        const titleLines = [
+          renderLangText(section.titleEn, 'en', 'span', 'en'),
+          renderLangText(section.titleZh, 'zh', 'span', 'zh')
+        ].filter(Boolean);
+        const summaryHeading = titleLines.length
+          ? titleLines.join('')
+          : `<span class="en lang-en" lang="en">${section.titleEn}</span>`;
+        summary.innerHTML = `<span class="section-heading">${summaryHeading}</span><span class="section-count">${matchingItems.length}</span>`;
         details.append(summary);
 
         const list = document.createElement('div');
@@ -805,7 +854,14 @@
 
       menuContainer.innerHTML = '';
       if (!itemsVisible) {
-        menuContainer.innerHTML = `<p class="empty-state">No matching dishes. 请尝试其他关键词。</p>`;
+        const emptyMessages = [];
+        if (isLanguageVisible('en')) {
+          emptyMessages.push('No matching dishes.');
+        }
+        if (isLanguageVisible('zh')) {
+          emptyMessages.push('请尝试其他关键词。');
+        }
+        menuContainer.innerHTML = `<p class="empty-state">${emptyMessages.join(' / ')}</p>`;
       } else {
         menuContainer.append(fragment);
       }
